@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - master
-      - on-branch
 
 jobs:
   release:
@@ -28,6 +27,4 @@ jobs:
           MAVEN_USERNAME: devops@runtimeverification.com
           MAVEN_PASSWORD: ${{ secrets.CLOUDREPO_PASSWORD }}
         run: |
-          cat ~/.m2/settings.xml
-          mvn help:effective-settings
           mvn deploy --batch-mode -U
