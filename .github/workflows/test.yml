@@ -10,7 +10,6 @@ jobs:
   format-check:
     name: 'Check code formatting'
     runs-on: ubuntu-latest
-    needs: version-sync
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v4
