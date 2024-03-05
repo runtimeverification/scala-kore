@@ -29,4 +29,5 @@ jobs:
           MAVEN_PASSWORD: ${{ secrets.CLOUDREPO_PASSWORD }}
         run: |
           cat ~/.m2/settings.xml
+          mvn help:effective-settings
           mvn deploy --batch-mode -U
