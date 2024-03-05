@@ -1,3 +1,0 @@
-<k>
-  foo ( inc ( sym2 ( ?_X:Int ) ) ) ~> .K
-</k>
