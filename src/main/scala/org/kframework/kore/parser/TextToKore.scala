@@ -1,10 +1,19 @@
 // Copyright (c) Runtime Verification, Inc. All Rights Reserved.
-package org.kframework.parser.kore.parser
+package org.kframework.kore.parser
 
-import org.kframework.parser.kore
-import org.kframework.parser.kore._
-import org.kframework.parser.kore.implementation.DefaultBuilders
-import org.kframework.utils.StringUtil
+import org.kframework.kore
+import org.kframework.kore.implementation.DefaultBuilders
+import org.kframework.kore.utils.StringUtil
+import org.kframework.kore.Alias
+import org.kframework.kore.Attributes
+import org.kframework.kore.Builders
+import org.kframework.kore.Declaration
+import org.kframework.kore.Definition
+import org.kframework.kore.Pattern
+import org.kframework.kore.Sort
+import org.kframework.kore.SortVariable
+import org.kframework.kore.Symbol
+import org.kframework.kore.Variable
 
 /** Parsing error exception. */
 case class ParseError(msg: String) extends Exception(msg) {
@@ -49,7 +58,7 @@ class TextToKore(b: Builders = DefaultBuilders) {
   // Therefore, [[parseId]] is the only method that directly modifies previousParsingLevel.
   private var previousParsingLevel: ParsingLevel = both
 
-  /** Parses the file and returns [[kore.Definition]]. */
+  /** Parses the file and returns [[Definition]]. */
   @throws(classOf[ParseError])
   def parse(file: java.io.File): Definition =
     parse(io.Source.fromFile(file))
@@ -66,15 +75,15 @@ class TextToKore(b: Builders = DefaultBuilders) {
 
   /** Parses the file and returns [[kore.Module]]. */
   @throws(classOf[ParseError])
-  def parseModule(file: java.io.File, line: Integer): Module =
+  def parseModule(file: java.io.File, line: Integer): kore.Module =
     parseModule(io.Source.fromFile(file), line)
 
   /** Parses the string and returns [[kore.Module]]. */
   @throws(classOf[ParseError])
-  def parseModule(str: String): Module =
+  def parseModule(str: String): kore.Module =
     parseModule(io.Source.fromString(str), 0)
 
-  /** Parses from the stream and returns [[kore.Definition]]. */
+  /** Parses from the stream and returns [[Definition]]. */
   @throws(classOf[ParseError])
   def parse(src: io.Source): Definition =
     try {
@@ -100,7 +109,7 @@ class TextToKore(b: Builders = DefaultBuilders) {
 
   /** Parses from the stream and returns [[kore.Module]]. */
   @throws(classOf[ParseError])
-  def parseModule(src: io.Source, line: Integer): Module =
+  def parseModule(src: io.Source, line: Integer): kore.Module =
     try {
       scanner.init(src, line)
       parseModule()
@@ -166,7 +175,7 @@ class TextToKore(b: Builders = DefaultBuilders) {
   // }
 
   // Module = module ModuleName Declarations endmodule Attributes
-  private def parseModule(): Module = {
+  private def parseModule(): kore.Module = {
     consumeWithLeadingWhitespaces("module")
     val name  = parseId(parsingLevel = objt)
     val decls = parseDeclarations(Seq()).reverse
@@ -175,8 +184,8 @@ class TextToKore(b: Builders = DefaultBuilders) {
     b.Module(name, decls, att)
   }
 
-  private def parseModules(): Seq[Module] = {
-    var ms = Seq.empty[Module]
+  private def parseModules(): Seq[kore.Module] = {
+    var ms = Seq.empty[kore.Module]
     while (!scanner.isEOF()) {
       val leading_char = scanner.nextWithSkippingWhitespaces()
       if (leading_char == 'm') { // a module starts
@@ -640,7 +649,7 @@ class TextToKore(b: Builders = DefaultBuilders) {
           s += scanner.next();
           loop(s)
         case '"' =>
-          StringUtil.unquoteKString(s.toString())
+          StringUtil.unquoteKOREString(s.toString())
         case c =>
           loop(s)
       }

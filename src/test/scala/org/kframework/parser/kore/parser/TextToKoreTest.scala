@@ -4,7 +4,8 @@ package org.kframework.parser.kore.parser
 
 import org.junit.Assert
 import org.junit.Test
-import org.kframework.parser.kore.implementation.{ DefaultBuilders => b }
+import org.kframework.kore.implementation.{ DefaultBuilders => b }
+import org.kframework.kore.parser.TextToKore
 
 class TextToKoreTest {
   @Test def testMultiOr(): Unit = {

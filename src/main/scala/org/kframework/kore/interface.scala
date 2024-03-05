@@ -1,242 +1,707 @@
 // Copyright (c) Runtime Verification, Inc. All Rights Reserved.
 package org.kframework.kore
 
-import java.util.Optional
-import org.kframework.attributes._
-import org.kframework.unparser.ToKast
-import org.kframework.utils.errorsystem.KEMException
-import scala.collection.JavaConverters._
+import com.davekoelle.AlphanumComparator
+
+trait Definition {
+  def att: Attributes
+
+  def modules: Seq[Module]
+}
+
+object Definition {
+  def unapply(arg: Definition): Option[(Seq[Module], Attributes)] = Some(arg.modules, arg.att)
+}
+
+trait Module {
+  def name: String
+
+  def decls: Seq[Declaration]
+
+  def att: Attributes
+}
+
+object Module {
+  def unapply(arg: Module): Option[(String, Seq[Declaration], Attributes)] =
+    Some(arg.name, arg.decls, arg.att)
+}
+
+trait Declaration
+
+trait Import extends Declaration {
+  def name: String
+
+  def att: Attributes
+}
+
+object Import {
+  def unapply(arg: Import): Option[(String, Attributes)] = Some(arg.name, arg.att)
+}
+
+trait SortDeclaration extends Declaration {
+  def params: Seq[SortVariable]
+
+  def sort: Sort
+
+  def att: Attributes
+}
+
+object SortDeclaration {
+  def unapply(arg: SortDeclaration): Option[(Seq[SortVariable], Sort, Attributes)] =
+    Some(arg.params, arg.sort, arg.att)
+}
+
+trait HookSortDeclaration extends SortDeclaration {}
+
+object HookSortDeclaration {
+  def unapply(arg: HookSortDeclaration): Option[(Seq[SortVariable], Sort, Attributes)] =
+    Some(arg.params, arg.sort, arg.att)
+}
+
+trait SymbolDeclaration extends Declaration {
+  def symbol: Symbol
+
+  def argSorts: Seq[Sort]
+
+  def returnSort: Sort
+
+  def att: Attributes
+}
+
+object SymbolDeclaration {
+  def unapply(arg: SymbolDeclaration): Option[(Symbol, Seq[Sort], Sort, Attributes)] =
+    Some(arg.symbol, arg.argSorts, arg.returnSort, arg.att)
+}
+
+trait HookSymbolDeclaration extends SymbolDeclaration {}
+
+object HookSymbolDeclaration {
+  def unapply(arg: HookSymbolDeclaration): Option[(Symbol, Seq[Sort], Sort, Attributes)] =
+    Some(arg.symbol, arg.argSorts, arg.returnSort, arg.att)
+}
+
+trait AliasDeclaration extends Declaration {
+  def alias: Alias
+
+  def argSorts: Seq[Sort]
+
+  def returnSort: Sort
+
+  def leftPattern: Pattern
+
+  def rightPattern: Pattern
+
+  def att: Attributes
+}
+
+object AliasDeclaration {
+  def unapply(
+      arg: AliasDeclaration
+  ): Option[(Alias, Seq[Sort], Sort, Pattern, Pattern, Attributes)] =
+    Some(arg.alias, arg.argSorts, arg.returnSort, arg.leftPattern, arg.rightPattern, arg.att)
+}
+
+trait AxiomDeclaration extends Declaration {
+  def params: Seq[SortVariable]
+
+  def pattern: Pattern
+
+  def att: Attributes
+}
+
+trait ClaimDeclaration extends AxiomDeclaration {}
+
+object AxiomDeclaration {
+  def unapply(arg: AxiomDeclaration): Option[(Seq[SortVariable], Pattern, Attributes)] =
+    Some(arg.params, arg.pattern, arg.att)
+}
+
+trait Attributes {
+  def patterns: Seq[Pattern]
+}
+
+object Attributes {
+  def unapply(arg: Attributes): Option[Seq[Pattern]] = Some(arg.patterns)
+}
+
+trait Pattern extends Comparable[Pattern] {
+  def compareTo(that: Pattern): Int = Pattern.ord.compare(this, that)
+}
+
+object AlphanumOrdering extends Ordering[String] {
+  def compare(a: String, b: String): Int = new AlphanumComparator().compare(a, b)
+}
+
+object Pattern {
+  implicit val ord: Ordering[Pattern] = (a: Pattern, b: Pattern) =>
+    (a, b) match {
+      case (c: Variable, d: Variable)           => Ordering[Variable].compare(c, d)
+      case (c: Application, d: Application)     => Ordering[Application].compare(c, d)
+      case (c: Top, d: Top)                     => Ordering[Top].compare(c, d)
+      case (c: Bottom, d: Bottom)               => Ordering[Bottom].compare(c, d)
+      case (c: And, d: And)                     => Ordering[And].compare(c, d)
+      case (c: Or, d: Or)                       => Ordering[Or].compare(c, d)
+      case (c: Not, d: Not)                     => Ordering[Not].compare(c, d)
+      case (c: Implies, d: Implies)             => Ordering[Implies].compare(c, d)
+      case (c: Iff, d: Iff)                     => Ordering[Iff].compare(c, d)
+      case (c: Exists, d: Exists)               => Ordering[Exists].compare(c, d)
+      case (c: Forall, d: Forall)               => Ordering[Forall].compare(c, d)
+      case (c: Ceil, d: Ceil)                   => Ordering[Ceil].compare(c, d)
+      case (c: Floor, d: Floor)                 => Ordering[Floor].compare(c, d)
+      case (c: Rewrites, d: Rewrites)           => Ordering[Rewrites].compare(c, d)
+      case (c: Equals, d: Equals)               => Ordering[Equals].compare(c, d)
+      case (c: Mem, d: Mem)                     => Ordering[Mem].compare(c, d)
+      case (c: DomainValue, d: DomainValue)     => Ordering[DomainValue].compare(c, d)
+      case (c: StringLiteral, d: StringLiteral) => Ordering[StringLiteral].compare(c, d)
+      case (_: Variable, _)                     => -1
+      case (_, _: Variable)                     => 1
+      case (_: Application, _)                  => -1
+      case (_, _: Application)                  => 1
+      case (_: Top, _)                          => -1
+      case (_, _: Top)                          => 1
+      case (_: Bottom, _)                       => -1
+      case (_, _: Bottom)                       => 1
+      case (_: And, _)                          => -1
+      case (_, _: And)                          => 1
+      case (_: Or, _)                           => -1
+      case (_, _: Or)                           => 1
+      case (_: Not, _)                          => -1
+      case (_, _: Not)                          => 1
+      case (_: Implies, _)                      => -1
+      case (_, _: Implies)                      => 1
+      case (_: Iff, _)                          => -1
+      case (_, _: Iff)                          => 1
+      case (_: Exists, _)                       => -1
+      case (_, _: Exists)                       => 1
+      case (_: Forall, _)                       => -1
+      case (_, _: Forall)                       => 1
+      case (_: Ceil, _)                         => -1
+      case (_, _: Ceil)                         => 1
+      case (_: Floor, _)                        => -1
+      case (_, _: Floor)                        => 1
+      case (_: Rewrites, _)                     => -1
+      case (_, _: Rewrites)                     => 1
+      case (_: Equals, _)                       => -1
+      case (_, _: Equals)                       => 1
+      case (_: Mem, _)                          => -1
+      case (_, _: Mem)                          => 1
+      case (_: DomainValue, _)                  => -1
+      case (_, _: DomainValue)                  => 1
+      case (_: StringLiteral, _)                => -1
+      case (_, _: StringLiteral)                => 1
+      case (_, _) =>
+        throw new IllegalArgumentException(
+          "Cannot order these patterns:\n" + a.toString + "\n" + b.toString
+        )
+    }
+}
+
+trait Variable extends Pattern {
+  def name: String
+
+  def sort: Sort
+}
+
+object Variable {
+  def unapply(arg: Variable): Option[(String, Sort)] = Some(arg.name, arg.sort)
+
+  implicit val ord: Ordering[Variable] = Ordering.by(unapply)
+}
+
+trait SetVariable extends Variable {}
+
+trait Application extends Pattern {
+  def head: SymbolOrAlias
+
+  def args: Seq[Pattern]
+}
+
+object Application {
+
+  import scala.math.Ordering.Implicits._
+
+  def unapply(arg: Application): Option[(SymbolOrAlias, Seq[Pattern])] = Some(arg.head, arg.args)
+
+  implicit val ord: Ordering[Application] = Ordering.by(unapply)
+}
+
+trait Top extends Pattern {
+  def s: Sort
+}
+
+object Top {
+  def unapply(arg: Top): Option[Sort] = Some(arg.s)
+
+  implicit val ord: Ordering[Top] = Ordering.by(unapply)
+}
+
+trait Bottom extends Pattern {
+  def s: Sort
+}
+
+object Bottom {
+  def unapply(arg: Bottom): Option[Sort] = Some(arg.s)
+
+  implicit val ord: Ordering[Bottom] = Ordering.by(unapply)
+}
+
+trait And extends Pattern {
+  def s: Sort
+
+  def args: Seq[Pattern]
+}
+
+object And {
+
+  import scala.math.Ordering.Implicits._
+
+  def unapply(arg: And): Option[(Sort, Seq[Pattern])] = Some(arg.s, arg.args)
+
+  implicit val ord: Ordering[And] = Ordering.by(unapply)
+}
+
+trait Or extends Pattern {
+  def s: Sort
+
+  def args: Seq[Pattern]
+}
+
+object Or {
+
+  import scala.math.Ordering.Implicits._
+
+  def unapply(arg: Or): Option[(Sort, Seq[Pattern])] = Some(arg.s, arg.args)
+
+  implicit val ord: Ordering[Or] = Ordering.by(unapply)
+}
+
+trait Not extends Pattern {
+  def s: Sort
+
+  def _1: Pattern
+}
+
+object Not {
+  def unapply(arg: Not): Option[(Sort, Pattern)] = Some(arg.s, arg._1)
+
+  implicit val ord: Ordering[Not] = Ordering.by(unapply)
+}
+
+trait Implies extends Pattern {
+  def s: Sort
+
+  def _1: Pattern
+
+  def _2: Pattern
+}
+
+object Implies {
+  def unapply(arg: Implies): Option[(Sort, Pattern, Pattern)] = Some(arg.s, arg._1, arg._2)
+
+  implicit val ord: Ordering[Implies] = Ordering.by(unapply)
+}
+
+trait Iff extends Pattern {
+  def s: Sort
+
+  def _1: Pattern
+
+  def _2: Pattern
+}
+
+object Iff {
+  def unapply(arg: Iff): Option[(Sort, Pattern, Pattern)] = Some(arg.s, arg._1, arg._2)
+
+  implicit val ord: Ordering[Iff] = Ordering.by(unapply)
+}
+
+trait Exists extends Pattern {
+  // this is the sort of the whole exists pattern, not the sort of the binding variable v
+  def s: Sort
+
+  def v: Variable
+
+  def p: Pattern
+}
+
+object Exists {
+  def unapply(arg: Exists): Option[(Sort, Variable, Pattern)] = Some(arg.s, arg.v, arg.p)
+
+  implicit val ord: Ordering[Exists] = Ordering.by(unapply)
+}
+
+trait Forall extends Pattern {
+  def s: Sort
+
+  def v: Variable
+
+  def p: Pattern
+}
+
+object Forall {
+  def unapply(arg: Forall): Option[(Sort, Variable, Pattern)] = Some(arg.s, arg.v, arg.p)
+
+  implicit val ord: Ordering[Forall] = Ordering.by(unapply)
+}
+
+trait Ceil extends Pattern {
+  def s: Sort
+
+  def rs: Sort
+
+  def p: Pattern
+}
+
+object Ceil {
+  def unapply(arg: Ceil): Option[(Sort, Sort, Pattern)] = Some(arg.s, arg.rs, arg.p)
+
+  implicit val ord: Ordering[Ceil] = Ordering.by(unapply)
+}
+
+trait Floor extends Pattern {
+  def s: Sort
+
+  def rs: Sort
+
+  def p: Pattern
+}
+
+object Floor {
+  def unapply(arg: Floor): Option[(Sort, Sort, Pattern)] = Some(arg.s, arg.rs, arg.p)
+
+  implicit val ord: Ordering[Floor] = Ordering.by(unapply)
+}
+// trait Next extends Pattern {
+//   def s: Sort
+//
+//   def _1: Pattern
+// }
+
+// object Next {
+//   def unapply(arg: Next): Option[(Sort, Pattern)] = Some(arg.s, arg._1)
+// }
+
+trait GeneralizedRewrite {
+  def sort: Sort
+
+  def getLeftHandSide: Seq[Pattern]
+
+  def getRightHandSide: Pattern
+}
 
 /**
- * This file contains all inner KORE interfaces. The the wiki for documentation:
- * https://github.com/runtimeverification/k/wiki/KORE-data-structures-guide
+ * \rewrites(P, Q) is defined as a predicate pattern floor(P implies Q) Therefore a rewrites-to
+ * pattern is parametric on two sorts. One is the sort of patterns P and Q; The other is the sort of
+ * the context.
+ */
+trait Rewrites extends Pattern with GeneralizedRewrite {
+  def s: Sort // the sort of the two patterns P and Q
+
+  def sort: Sort = s
+
+  def _1: Pattern
+
+  def _2: Pattern
+
+  def getLeftHandSide: Seq[Pattern] = Seq(_1)
+
+  def getRightHandSide: Pattern = _2
+}
+
+object Rewrites {
+  def unapply(arg: Rewrites): Option[(Sort, Pattern, Pattern)] =
+    Some(arg.s, arg._1, arg._2)
+
+  implicit val ord: Ordering[Rewrites] = Ordering.by(unapply)
+}
+
+trait Equals extends Pattern with GeneralizedRewrite {
+  def s: Sort // the sort of the two patterns that are being compared
+
+  def rs: Sort // the sort of the context where the equality pattern is being placed
+
+  def sort: Sort = rs
+
+  def _1: Pattern
+
+  def _2: Pattern
+
+  def getLeftHandSide: Seq[Pattern] = _1 match {
+    case Application(_, ps) => ps
+  }
+
+  def getRightHandSide: Pattern = _2
+}
+
+object Equals {
+  def unapply(arg: Equals): Option[(Sort, Sort, Pattern, Pattern)] =
+    Some(arg.s, arg.rs, arg._1, arg._2)
+
+  implicit val ord: Ordering[Equals] = Ordering.by(unapply)
+}
+
+/**
+ * Membership, denoted as \in(P, Q) === \ceil(P and Q)
+ */
+trait Mem extends Pattern {
+  def s: Sort // the sort of X and P
+
+  def rs: Sort // the context sort
+
+  def p: Pattern // the l.h.s.
+
+  def q: Pattern // the r.h.s.
+}
+
+object Mem {
+  def unapply(arg: Mem): Option[(Sort, Sort, Pattern, Pattern)] = Some(arg.s, arg.rs, arg.p, arg.q)
+
+  implicit val ord: Ordering[Mem] = Ordering.by(unapply)
+}
+
+/**
+ * Any domain-specific value represented as a string.
+ */
+trait DomainValue extends Pattern {
+  def s: Sort // the sort of X and P
+
+  def str: String // the value
+}
+
+object DomainValue {
+  implicit val strOrd: Ordering[String] = AlphanumOrdering
+
+  def unapply(arg: DomainValue): Option[(Sort, String)] = Some(arg.s, arg.str)
+
+  implicit val ord: Ordering[DomainValue] = Ordering.by(unapply)
+}
+
+/**
+ * \subset(P,Q) is a predicate pattern that checks whether P is a subset of Q.
+ */
+// trait Subset extends Pattern {
+//   def s: Sort // the sort of P and Q
+//
+//   def rs: Sort // the context sort
+//
+//   def _1: Pattern
+//
+//   def _2: Pattern
+// }
+//
+// object Subset {
+//   def unapply(arg: Subset): Option[(Sort, Sort, Pattern, Pattern)] =
+//     Some(arg.s, arg.rs, arg._1, arg._2)
+// }
+
+// String literals <string> are considered as meta-level patterns of sort #String
+trait StringLiteral extends Pattern {
+  def str: String
+}
+
+object StringLiteral {
+  def unapply(arg: StringLiteral): Option[String] = Some(arg.str)
+
+  implicit val ord: Ordering[StringLiteral] = Ordering.by(unapply)
+}
+
+// Domain Values are needed to merge Kore to K.
+// The data structure for DomainValue is temporary.
+// It is designed and implemented just to make sure that we can
+// merge Kore to K.
+// trait DomainValue extends Pattern {
+//   def sortStr: String   // a string that represents the sort of the value, e.g., "Bool", "Int", etc
+//
+//   def valueStr: String  // a string that represents the value, e.g., "12345", "0x12345", etc
+// }
+//
+// object DomainValue extends Pattern {
+//   def unapply(arg: DomainValue): Option[(String, String)] = Some(arg.sortStr, arg.valueStr)
+// }
+
+/**
+ * A sort can be either a sort variable or of the form C{s1,...,sn} where C is called the sort
+ * constructor and s1,...,sn are sort parameters. We call sorts that are of the form C{s1,...,sn}
+ * compound sorts because I don't know a better name.
  */
 
-trait K extends Serializable with HasLocation with AttValue {
-  def att: Att
-  override def toString = ToKast.apply(this)
+trait Sort
 
-  lazy val cachedHashCode = computeHashCode
-
-  override def hashCode = cachedHashCode
-
-  def computeHashCode: Int
-
-  def location: Optional[Location] = att.getOptional(Att.LOCATION, classOf[Location])
-  def source: Optional[Source]     = att.getOptional(Att.SOURCE, classOf[Source])
-}
-
-object K {
-  implicit val ord = new Ordering[K] {
-    def compare(a: K, b: K): Int = {
-      import scala.math.Ordering.Implicits._
-      (a, b) match {
-        case (c: KToken, d: KToken) =>
-          Ordering.Tuple2(Ordering[String], Ordering[Sort]).compare((c.s, c.sort), (d.s, d.sort))
-        case (c: KApply, d: KApply) =>
-          Ordering
-            .Tuple2(KLabelOrdering, seqDerivedOrdering[Seq, K](this))
-            .compare((c.klabel, c.klist.items.asScala), (d.klabel, d.klist.items.asScala))
-        case (c: KSequence, d: KSequence) =>
-          seqDerivedOrdering(this).compare(c.items.asScala, d.items.asScala)
-        case (c: KVariable, d: KVariable) => Ordering[String].compare(c.name, d.name)
-        case (c: KAs, d: KAs) =>
-          Ordering.Tuple2(this, this).compare((c.pattern, c.alias), (d.pattern, d.alias))
-        case (c: KRewrite, d: KRewrite) =>
-          Ordering.Tuple2(this, this).compare((c.left, c.right), (d.left, d.right))
-        case (c: InjectedKLabel, d: InjectedKLabel) => KLabelOrdering.compare(c.klabel, d.klabel)
-        case (_: KToken, _)                         => 1
-        case (_, _: KToken)                         => -1
-        case (_: KApply, _)                         => 1
-        case (_, _: KApply)                         => -1
-        case (_: KSequence, _)                      => 1
-        case (_, _: KSequence)                      => -1
-        case (_: KVariable, _)                      => 1
-        case (_, _: KVariable)                      => -1
-        case (_: KAs, _)                            => 1
-        case (_, _: KAs)                            => -1
-        case (_: KRewrite, _)                       => 1
-        case (_, _: KRewrite)                       => -1
-        case (_: InjectedKLabel, _)                 => 1
-        case (_, _: InjectedKLabel)                 => -1
-        case (_, _) =>
-          throw KEMException.internalError(
-            "Cannot order these terms:\n" + a.toString() + "\n" + b.toString()
-          )
-      }
-    }
-  }
-}
-
-trait KItem extends K
-
-trait KLabel extends AttValue {
-  def name: String
-  def params: Seq[Sort]
-  override def equals(other: Any) = other match {
-    case l: KLabel => name == l.name && params == l.params
-    case _         => false
-  }
-  override def hashCode = name.hashCode * 29 + params.hashCode
-
-  def apply(ks: K*) = ADT.KApply(this, ADT.KList(ks.toList))
-
-  def head: KLabel = ADT.KLabel(name)
-}
-
-object KLabelOrdering extends Ordering[KLabel] {
-  def compare(a: KLabel, b: KLabel): Int = {
-    import scala.math.Ordering.Implicits._
-    Ordering
-      .Tuple2(Ordering[String], seqDerivedOrdering[Seq, Sort](Ordering[Sort]))
-      .compare((a.name, a.params), (b.name, b.params))
-  }
-}
-
-trait KToken extends KItem {
-  def sort: Sort
-  def s: String
-  override def equals(other: Any) = other match {
-    case other: KToken => sort == other.sort && s == other.s
-    case _             => false
-  }
-  def computeHashCode = sort.hashCode() * 13 + s.hashCode
-}
-
-trait Sort extends Ordered[Sort] with AttValue {
-  def name: String
-  def params: Seq[Sort]
-  override def equals(other: Any) = other match {
-    case other: Sort => name == other.name && params == other.params
-    case _           => false
-  }
-  override def hashCode = name.hashCode * 23 + params.hashCode
-
-  def compare(that: Sort): Int = {
-    import scala.math.Ordering.Implicits._
-    Ordering
-      .Tuple2(Ordering[String], seqDerivedOrdering[Seq, Sort](Ordering.ordered(identity)))
-      .compare((this.name, this.params), (this.name, this.params))
-  }
-
-  def head: SortHead = ADT.SortHead(name, params.size)
-
-  def substitute(subst: Map[Sort, Sort]): Sort =
-    ADT.Sort(name, params.map(p => subst.getOrElse(p, p.substitute(subst))): _*)
-
-  def contains(sort: Sort): Boolean =
-    this == sort || params.exists(_.contains(sort))
-
-  override def toString: String = name + (if (params.nonEmpty) "{" + params.mkString(",") + "}")
-
-  lazy val isNat: Boolean =
-    try {
-      name.toInt
-      true
-    } catch {
-      case _: NumberFormatException => false
+object Sort {
+  implicit val ord: Ordering[Sort] = (a: Sort, b: Sort) =>
+    (a, b) match {
+      case (c: SortVariable, d: SortVariable) => Ordering[SortVariable].compare(c, d)
+      case (c: CompoundSort, d: CompoundSort) => Ordering[CompoundSort].compare(c, d)
+      case (_: SortVariable, _)               => -1
+      case (_, _: SortVariable)               => 1
+      case (_: CompoundSort, _)               => -1
+      case (_, _: CompoundSort)               => 1
+      case (_, _) =>
+        throw new IllegalArgumentException(
+          "Cannot order these sorts:\n" + a.toString + "\n" + b.toString
+        )
     }
 }
 
-trait SortHead extends Ordered[SortHead] {
+trait SortVariable extends Sort {
   def name: String
-  def params: Int
-  override def equals(other: Any) = other match {
-    case other: SortHead => name == other.name && params == other.params
-    case _               => false
-  }
-  override def hashCode = name.hashCode * 23 + params.hashCode
-
-  def compare(that: SortHead): Int =
-    Ordering
-      .Tuple2(Ordering[String], Ordering[Int])
-      .compare((this.name, this.params), (this.name, this.params))
-
 }
 
-trait KCollection {
-  def items: java.util.List[K]
-  def size: Int
-  def asIterable: java.lang.Iterable[_ <: K]
-  def stream: java.util.stream.Stream[K] = items.stream()
+object SortVariable {
+  def unapply(arg: SortVariable): Option[String] = Some(arg.name)
 
-  override def equals(that: Any): Boolean =
-    hashCode == that.hashCode && (that match {
-      case that: AnyRef if that.asInstanceOf[AnyRef] eq this => true
-      case that: KCollection                                 => this.items == that.items
-      case _                                                 => false
-    })
-
-  def computeHashCode = items.hashCode
+  implicit val ord: Ordering[SortVariable] = Ordering.by(unapply)
 }
 
-trait KList extends KCollection with AttValue {}
+/**
+ * A compound sort is of the form C{s1,...,sn} For example: Nat{} List{Nat{}} List{S} Map{S,List{S}}
+ * Map{Map{Nat{},Nat{}},Nat{}}
+ */
+trait CompoundSort extends Sort {
+  def ctr: String // sort constructor
 
-trait KApply extends KItem with KCollection {
-  def klabel: KLabel
-  def klist: KList
-
-  override def equals(that: Any): Boolean =
-    hashCode == that.hashCode && (that match {
-      case that: AnyRef if that.asInstanceOf[AnyRef] eq this => true
-      case that: KApply =>
-        that.klabel == klabel && this.klist == that.klist
-      case _ => false
-    })
-
-  override def computeHashCode = klabel.hashCode * 17 + klist.hashCode
+  def params: Seq[Sort] // sort parameters
 }
 
-trait KSequence extends KCollection with K
+object CompoundSort {
 
-trait KVariable extends KItem {
-  def name: String
+  import scala.math.Ordering.Implicits._
 
-  override def equals(other: Any): Boolean = other match {
-    case l: KVariable => this.name == l.name
-    case _            => false
-  }
+  def unapply(arg: CompoundSort): Option[(String, Seq[Sort])] = Some(arg.ctr, arg.params)
 
-  override def computeHashCode: Int = name.hashCode
+  implicit val ord: Ordering[CompoundSort] = Ordering.by(unapply)
 }
 
-trait KAs extends K {
-  def pattern: K
-  def alias: K
+/**
+ * A symbol-or-alias is of the form C{s1,...,sn} where C is called a constructor and s1,...,sn are
+ * sort parameters. In the Semantics of K document, SymbolOrAlias is called the nonterminal <head>
+ */
+trait SymbolOrAlias {
+  def ctr: String
 
-  override def equals(that: Any): Boolean =
-    hashCode == that.hashCode && (that match {
-      case that: AnyRef if that.asInstanceOf[AnyRef] eq this => true
-      case that: KAs => this.pattern == that.pattern && this.alias == that.alias
-      case _         => false
-    })
-
-  def computeHashCode = pattern.hashCode * 19 + alias.hashCode
+  def params: Seq[Sort]
 }
 
-trait KRewrite extends K {
-  def left: K
-  def right: K
+object SymbolOrAlias {
 
-  override def equals(that: Any): Boolean =
-    hashCode == that.hashCode && (that match {
-      case that: AnyRef if that.asInstanceOf[AnyRef] eq this => true
-      case that: KRewrite => this.left == that.left && this.right == that.right
-      case _              => false
-    })
+  import scala.math.Ordering.Implicits._
 
-  def computeHashCode = left.hashCode * 19 + right.hashCode
+  def unapply(arg: SymbolOrAlias): Option[(String, Seq[Sort])] =
+    Some(arg.ctr, arg.params)
+
+  implicit val ord: Ordering[SymbolOrAlias] = Ordering.by(unapply)
 }
 
-trait InjectedKLabel extends KItem {
-  def klabel: KLabel
+trait Symbol extends SymbolOrAlias
 
-  override def equals(that: Any): Boolean =
-    hashCode == that.hashCode && (that match {
-      case that: AnyRef if that.asInstanceOf[AnyRef] eq this => true
-      case that: InjectedKLabel                              => this.klabel == that.klabel
-      case _                                                 => false
-    })
+object Symbol {
+  def unapply(arg: Symbol): Option[(String, Seq[Sort])] = Some(arg.ctr, arg.params)
+}
 
-  def computeHashCode = klabel.hashCode
+trait Alias extends SymbolOrAlias
+
+object Alias {
+  def unapply(arg: Alias): Option[(String, Seq[Sort])] = Some(arg.ctr, arg.params)
+}
+
+trait Builders {
+
+  def Definition(att: Attributes, modules: Seq[Module]): Definition
+
+  def Module(name: String, sens: Seq[Declaration], att: Attributes): Module
+
+  def Import(name: String, att: Attributes): Declaration
+
+  def SortDeclaration(params: Seq[SortVariable], sort: Sort, att: Attributes): Declaration
+
+  def HookSortDeclaration(params: Seq[SortVariable], sort: Sort, att: Attributes): Declaration
+
+  def SymbolDeclaration(
+      symbol: Symbol,
+      argSorts: Seq[Sort],
+      returnSort: Sort,
+      att: Attributes
+  ): Declaration
+
+  def HookSymbolDeclaration(
+      symbol: Symbol,
+      argSorts: Seq[Sort],
+      returnSort: Sort,
+      att: Attributes
+  ): Declaration
+
+  def AliasDeclaration(
+      alias: Alias,
+      argSorts: Seq[Sort],
+      returnSort: Sort,
+      leftPattern: Pattern,
+      rightPattern: Pattern,
+      att: Attributes
+  ): Declaration
+
+  def AxiomDeclaration(params: Seq[SortVariable], pattern: Pattern, att: Attributes): Declaration
+
+  def ClaimDeclaration(params: Seq[SortVariable], pattern: Pattern, att: Attributes): Declaration
+
+  def Attributes(att: Seq[Pattern]): Attributes
+
+  def Variable(name: String, sort: Sort): Variable
+
+  def SetVariable(name: String, sort: Sort): SetVariable
+
+  def Application(head: SymbolOrAlias, args: Seq[Pattern]): Pattern
+
+  def Top(s: Sort): Pattern
+
+  def Bottom(s: Sort): Pattern
+
+  def And(s: Sort, _1: Pattern, _2: Pattern): Pattern
+
+  def And(s: Sort, args: Seq[Pattern]): Pattern
+
+  def Or(s: Sort, _1: Pattern, _2: Pattern): Pattern
+
+  def Or(s: Sort, args: Seq[Pattern]): Pattern
+
+  def Not(s: Sort, _1: Pattern): Pattern
+
+  def Implies(s: Sort, _1: Pattern, _2: Pattern): Pattern
+
+  def Iff(s: Sort, _1: Pattern, _2: Pattern): Pattern
+
+  def Exists(s: Sort, v: Variable, p: Pattern): Pattern
+
+  def Forall(s: Sort, v: Variable, p: Pattern): Pattern
+
+  def Ceil(s: Sort, rs: Sort, p: Pattern): Pattern
+
+  def Floor(s: Sort, rs: Sort, p: Pattern): Pattern
+
+  // def Next(s: Sort, _1: Pattern): Pattern
+
+  def Rewrites(s: Sort, _1: Pattern, _2: Pattern): Pattern
+
+  def Equals(s: Sort, rs: Sort, _1: Pattern, _2: Pattern): Pattern
+
+  def Mem(s: Sort, rs: Sort, p: Pattern, q: Pattern): Pattern
+
+  def DomainValue(s: Sort, str: String): Pattern
+
+  // def Subset(s: Sort, rs:Sort, _1: Pattern, _2: Pattern): Pattern
+
+  def StringLiteral(str: String): Pattern
+
+  def SortVariable(name: String): SortVariable
+
+  def CompoundSort(ctr: String, params: Seq[Sort]): CompoundSort
+
+  def SymbolOrAlias(ctr: String, params: Seq[Sort]): SymbolOrAlias
+
+  def Symbol(str: String, params: Seq[Sort]): Symbol
+
+  def Alias(str: String, params: Seq[Sort]): Alias
+
+  def LeftAssoc(ctr: (Pattern, Pattern) => Pattern, ps: Seq[Pattern]): Pattern
+
+  def RightAssoc(ctr: (Pattern, Pattern) => Pattern, ps: Seq[Pattern]): Pattern
 }
