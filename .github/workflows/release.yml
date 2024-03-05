@@ -1,0 +1,29 @@
+name: 'Release'
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  release:
+    name: 'Publish Release'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Check out code'
+        uses: actions/checkout@v4
+
+      - name: Set up Java for publishing to GitHub Maven Packages
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'zulu'
+          overwrite-settings: true
+          server-id: runtime.verification
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_PASSWORD
+
+      - name: 'Push Maven Packages'
+        env:
+          MAVEN_USERNAME: devops@runtimeverification.com
+          MAVEN_PASSWORD: ${{ secrets.CLOUDREPO_PASSWORD }}
+        run: mvn deploy --batch-mode -U
