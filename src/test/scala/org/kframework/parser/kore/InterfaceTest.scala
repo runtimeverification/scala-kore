@@ -2,10 +2,10 @@
 
 package org.kframework.parser.kore
 
+import com.runtimeverification.k.kore.implementation.{ DefaultBuilders => b }
+import com.runtimeverification.k.kore.Pattern
 import org.junit.Assert
 import org.junit.Test
-import org.kframework.scala_kore.implementation.{ DefaultBuilders => b }
-import org.kframework.scala_kore.Pattern
 
 class InterfaceTest {
 

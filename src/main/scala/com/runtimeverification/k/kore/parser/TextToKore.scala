@@ -1,19 +1,19 @@
 // Copyright (c) Runtime Verification, Inc. All Rights Reserved.
-package org.kframework.scala_kore.parser
+package com.runtimeverification.k.kore.parser
 
-import org.kframework.scala_kore
-import org.kframework.scala_kore.implementation.DefaultBuilders
-import org.kframework.scala_kore.utils.StringUtil
-import org.kframework.scala_kore.Alias
-import org.kframework.scala_kore.Attributes
-import org.kframework.scala_kore.Builders
-import org.kframework.scala_kore.Declaration
-import org.kframework.scala_kore.Definition
-import org.kframework.scala_kore.Pattern
-import org.kframework.scala_kore.Sort
-import org.kframework.scala_kore.SortVariable
-import org.kframework.scala_kore.Symbol
-import org.kframework.scala_kore.Variable
+import com.runtimeverification.k.kore
+import com.runtimeverification.k.kore.implementation.DefaultBuilders
+import com.runtimeverification.k.kore.utils.StringUtil
+import com.runtimeverification.k.kore.Alias
+import com.runtimeverification.k.kore.Attributes
+import com.runtimeverification.k.kore.Builders
+import com.runtimeverification.k.kore.Declaration
+import com.runtimeverification.k.kore.Definition
+import com.runtimeverification.k.kore.Pattern
+import com.runtimeverification.k.kore.Sort
+import com.runtimeverification.k.kore.SortVariable
+import com.runtimeverification.k.kore.Symbol
+import com.runtimeverification.k.kore.Variable
 
 /** Parsing error exception. */
 case class ParseError(msg: String) extends Exception(msg) {
@@ -25,7 +25,7 @@ case class ParseError(msg: String) extends Exception(msg) {
 }
 
 /**
- * A parser for [[scala_kore.Pattern]].
+ * A parser for [[Pattern]].
  *
  * @constructor
  *   Creates a new parser.
@@ -63,24 +63,24 @@ class TextToKore(b: Builders = DefaultBuilders) {
   def parse(file: java.io.File): Definition =
     parse(io.Source.fromFile(file))
 
-  /** Parses the file and returns [[scala_kore.Pattern]]. */
+  /** Parses the file and returns [[Pattern]]. */
   @throws(classOf[ParseError])
   def parsePattern(file: java.io.File, line: Integer): Pattern =
     parsePattern(io.Source.fromFile(file), line)
 
-  /** Parses the string and returns [[scala_kore.Pattern]]. */
+  /** Parses the string and returns [[Pattern]]. */
   @throws(classOf[ParseError])
   def parsePattern(str: String): Pattern =
     parsePattern(io.Source.fromString(str), 0)
 
-  /** Parses the file and returns [[scala_kore.Module]]. */
+  /** Parses the file and returns [[kore.Module]]. */
   @throws(classOf[ParseError])
-  def parseModule(file: java.io.File, line: Integer): scala_kore.Module =
+  def parseModule(file: java.io.File, line: Integer): kore.Module =
     parseModule(io.Source.fromFile(file), line)
 
-  /** Parses the string and returns [[scala_kore.Module]]. */
+  /** Parses the string and returns [[kore.Module]]. */
   @throws(classOf[ParseError])
-  def parseModule(str: String): scala_kore.Module =
+  def parseModule(str: String): kore.Module =
     parseModule(io.Source.fromString(str), 0)
 
   /** Parses from the stream and returns [[Definition]]. */
@@ -95,7 +95,7 @@ class TextToKore(b: Builders = DefaultBuilders) {
     } finally
       scanner.close()
 
-  /** Parses from the stream and returns [[scala_kore.Pattern]]. */
+  /** Parses from the stream and returns [[Pattern]]. */
   @throws(classOf[ParseError])
   def parsePattern(src: io.Source, line: Integer): Pattern =
     try {
@@ -107,9 +107,9 @@ class TextToKore(b: Builders = DefaultBuilders) {
     } finally
       scanner.close()
 
-  /** Parses from the stream and returns [[scala_kore.Module]]. */
+  /** Parses from the stream and returns [[kore.Module]]. */
   @throws(classOf[ParseError])
-  def parseModule(src: io.Source, line: Integer): scala_kore.Module =
+  def parseModule(src: io.Source, line: Integer): kore.Module =
     try {
       scanner.init(src, line)
       parseModule()
@@ -175,7 +175,7 @@ class TextToKore(b: Builders = DefaultBuilders) {
   // }
 
   // Module = module ModuleName Declarations endmodule Attributes
-  private def parseModule(): scala_kore.Module = {
+  private def parseModule(): kore.Module = {
     consumeWithLeadingWhitespaces("module")
     val name  = parseId(parsingLevel = objt)
     val decls = parseDeclarations(Seq()).reverse
@@ -184,8 +184,8 @@ class TextToKore(b: Builders = DefaultBuilders) {
     b.Module(name, decls, att)
   }
 
-  private def parseModules(): Seq[scala_kore.Module] = {
-    var ms = Seq.empty[scala_kore.Module]
+  private def parseModules(): Seq[kore.Module] = {
+    var ms = Seq.empty[kore.Module]
     while (!scanner.isEOF()) {
       val leading_char = scanner.nextWithSkippingWhitespaces()
       if (leading_char == 'm') { // a module starts
@@ -530,7 +530,7 @@ class TextToKore(b: Builders = DefaultBuilders) {
                 val params =
                   parseList(() => parseSort(parsingLevel = previousParsingLevel), ',', '}')
                 consumeWithLeadingWhitespaces("}")
-                (p1: scala_kore.Pattern, p2: scala_kore.Pattern) =>
+                (p1: Pattern, p2: Pattern) =>
                   b.Application(b.SymbolOrAlias(id, params), Seq(p1, p2))
             }
             consumeWithLeadingWhitespaces("(")
@@ -551,7 +551,7 @@ class TextToKore(b: Builders = DefaultBuilders) {
                 val params =
                   parseList(() => parseSort(parsingLevel = previousParsingLevel), ',', '}')
                 consumeWithLeadingWhitespaces("}")
-                (p1: scala_kore.Pattern, p2: scala_kore.Pattern) =>
+                (p1: Pattern, p2: Pattern) =>
                   b.Application(b.SymbolOrAlias(id, params), Seq(p1, p2))
             }
             consumeWithLeadingWhitespaces("(")
