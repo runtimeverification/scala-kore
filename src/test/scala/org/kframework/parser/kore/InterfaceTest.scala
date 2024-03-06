@@ -4,8 +4,8 @@ package org.kframework.parser.kore
 
 import org.junit.Assert
 import org.junit.Test
-import org.kframework.kore.implementation.{ DefaultBuilders => b }
-import org.kframework.kore.Pattern
+import org.kframework.scala_kore.implementation.{ DefaultBuilders => b }
+import org.kframework.scala_kore.Pattern
 
 class InterfaceTest {
 
