@@ -1,5 +1,5 @@
 // Copyright (c) Runtime Verification, Inc. All Rights Reserved.
-package org.kframework.kore
+package org.kframework.scala_kore
 
 import com.davekoelle.AlphanumComparator
 

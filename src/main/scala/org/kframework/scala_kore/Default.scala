@@ -1,122 +1,130 @@
 // Copyright (c) Runtime Verification, Inc. All Rights Reserved.
-package org.kframework.kore
+package org.kframework.scala_kore
 
-import org.kframework.kore
+import org.kframework.scala_kore
 
 object implementation {
 
   private object ConcreteClasses {
 
-    case class Definition(att: kore.Attributes, modules: Seq[kore.Module]) extends kore.Definition
+    case class Definition(att: scala_kore.Attributes, modules: Seq[scala_kore.Module])
+        extends scala_kore.Definition
 
-    case class Module(name: String, decls: Seq[Declaration], att: kore.Attributes)
-        extends kore.Module
+    case class Module(name: String, decls: Seq[Declaration], att: scala_kore.Attributes)
+        extends scala_kore.Module
 
-    case class Import(name: String, att: kore.Attributes) extends kore.Import
+    case class Import(name: String, att: scala_kore.Attributes) extends scala_kore.Import
 
-    case class SortDeclaration(params: Seq[kore.SortVariable], sort: Sort, att: kore.Attributes)
-        extends kore.SortDeclaration
+    case class SortDeclaration(
+        params: Seq[scala_kore.SortVariable],
+        sort: Sort,
+        att: scala_kore.Attributes
+    ) extends scala_kore.SortDeclaration
 
-    case class HookSortDeclaration(params: Seq[kore.SortVariable], sort: Sort, att: kore.Attributes)
-        extends kore.HookSortDeclaration
+    case class HookSortDeclaration(
+        params: Seq[scala_kore.SortVariable],
+        sort: Sort,
+        att: scala_kore.Attributes
+    ) extends scala_kore.HookSortDeclaration
 
     case class SymbolDeclaration(
-        symbol: kore.Symbol,
+        symbol: scala_kore.Symbol,
         argSorts: Seq[Sort],
         returnSort: Sort,
-        att: kore.Attributes
-    ) extends kore.SymbolDeclaration
+        att: scala_kore.Attributes
+    ) extends scala_kore.SymbolDeclaration
 
     case class HookSymbolDeclaration(
-        symbol: kore.Symbol,
+        symbol: scala_kore.Symbol,
         argSorts: Seq[Sort],
         returnSort: Sort,
-        att: kore.Attributes
-    ) extends kore.HookSymbolDeclaration
+        att: scala_kore.Attributes
+    ) extends scala_kore.HookSymbolDeclaration
 
     case class AliasDeclaration(
-        alias: kore.Alias,
+        alias: scala_kore.Alias,
         argSorts: Seq[Sort],
         returnSort: Sort,
         leftPattern: Pattern,
         rightPattern: Pattern,
-        att: kore.Attributes
-    ) extends kore.AliasDeclaration
+        att: scala_kore.Attributes
+    ) extends scala_kore.AliasDeclaration
 
     case class AxiomDeclaration(
-        params: Seq[kore.SortVariable],
+        params: Seq[scala_kore.SortVariable],
         pattern: Pattern,
-        att: kore.Attributes
-    ) extends kore.AxiomDeclaration
+        att: scala_kore.Attributes
+    ) extends scala_kore.AxiomDeclaration
 
     case class ClaimDeclaration(
-        params: Seq[kore.SortVariable],
+        params: Seq[scala_kore.SortVariable],
         pattern: Pattern,
-        att: kore.Attributes
-    ) extends kore.ClaimDeclaration
+        att: scala_kore.Attributes
+    ) extends scala_kore.ClaimDeclaration
 
-    case class Attributes(patterns: Seq[Pattern]) extends kore.Attributes
+    case class Attributes(patterns: Seq[Pattern]) extends scala_kore.Attributes
 
-    case class Variable(name: String, sort: Sort) extends kore.Variable
+    case class Variable(name: String, sort: Sort) extends scala_kore.Variable
 
-    case class SetVariable(name: String, sort: Sort) extends kore.SetVariable
+    case class SetVariable(name: String, sort: Sort) extends scala_kore.SetVariable
 
-    case class Application(head: kore.SymbolOrAlias, args: Seq[Pattern]) extends kore.Application
+    case class Application(head: scala_kore.SymbolOrAlias, args: Seq[Pattern])
+        extends scala_kore.Application
 
-    case class Top(s: Sort) extends kore.Top
+    case class Top(s: Sort) extends scala_kore.Top
 
-    case class Bottom(s: Sort) extends kore.Bottom
+    case class Bottom(s: Sort) extends scala_kore.Bottom
 
-    case class And(s: Sort, args: Seq[Pattern]) extends kore.And
+    case class And(s: Sort, args: Seq[Pattern]) extends scala_kore.And
 
-    case class Or(s: Sort, args: Seq[Pattern]) extends kore.Or
+    case class Or(s: Sort, args: Seq[Pattern]) extends scala_kore.Or
 
-    case class Not(s: Sort, _1: Pattern) extends kore.Not
+    case class Not(s: Sort, _1: Pattern) extends scala_kore.Not
 
-    case class Implies(s: Sort, _1: Pattern, _2: Pattern) extends kore.Implies
+    case class Implies(s: Sort, _1: Pattern, _2: Pattern) extends scala_kore.Implies
 
-    case class Iff(s: Sort, _1: Pattern, _2: Pattern) extends kore.Iff
+    case class Iff(s: Sort, _1: Pattern, _2: Pattern) extends scala_kore.Iff
 
-    case class Exists(s: Sort, v: kore.Variable, p: Pattern) extends kore.Exists
+    case class Exists(s: Sort, v: scala_kore.Variable, p: Pattern) extends scala_kore.Exists
 
-    case class Forall(s: Sort, v: kore.Variable, p: Pattern) extends kore.Forall
+    case class Forall(s: Sort, v: scala_kore.Variable, p: Pattern) extends scala_kore.Forall
 
     // case class Next(s: i.Sort, _1: i.Pattern) extends i.Next
 
-    case class Rewrites(s: Sort, _1: Pattern, _2: Pattern) extends kore.Rewrites
+    case class Rewrites(s: Sort, _1: Pattern, _2: Pattern) extends scala_kore.Rewrites
 
-    case class Ceil(s: Sort, rs: Sort, p: Pattern) extends kore.Ceil
+    case class Ceil(s: Sort, rs: Sort, p: Pattern) extends scala_kore.Ceil
 
-    case class Floor(s: Sort, rs: Sort, p: Pattern) extends kore.Floor
+    case class Floor(s: Sort, rs: Sort, p: Pattern) extends scala_kore.Floor
 
-    case class Equals(s: Sort, rs: Sort, _1: Pattern, _2: Pattern) extends kore.Equals
+    case class Equals(s: Sort, rs: Sort, _1: Pattern, _2: Pattern) extends scala_kore.Equals
 
-    case class Mem(s: Sort, rs: Sort, p: Pattern, q: Pattern) extends kore.Mem
+    case class Mem(s: Sort, rs: Sort, p: Pattern, q: Pattern) extends scala_kore.Mem
 
-    case class DomainValue(s: Sort, str: String) extends kore.DomainValue
+    case class DomainValue(s: Sort, str: String) extends scala_kore.DomainValue
 
     // case class Subset(s: i.Sort, rs: i.Sort,_1: i.Pattern,_2: i.Pattern) extends i.Subset
 
-    case class StringLiteral(str: String) extends kore.StringLiteral
+    case class StringLiteral(str: String) extends scala_kore.StringLiteral
 
-    case class SortVariable(name: String) extends kore.SortVariable {
+    case class SortVariable(name: String) extends scala_kore.SortVariable {
       override def toString           = name
       override lazy val hashCode: Int = scala.runtime.ScalaRunTime._hashCode(this)
     }
 
-    case class CompoundSort(ctr: String, params: Seq[Sort]) extends kore.CompoundSort {
+    case class CompoundSort(ctr: String, params: Seq[Sort]) extends scala_kore.CompoundSort {
       override lazy val toString      = ctr + "{" + params.map(_.toString).mkString(", ") + "}"
       override lazy val hashCode: Int = scala.runtime.ScalaRunTime._hashCode(this)
     }
 
-    case class SymbolOrAlias(ctr: String, params: Seq[Sort]) extends kore.SymbolOrAlias {
+    case class SymbolOrAlias(ctr: String, params: Seq[Sort]) extends scala_kore.SymbolOrAlias {
       override lazy val toString      = ctr + "{" + params.map(_.toString).mkString(", ") + "}"
       override lazy val hashCode: Int = scala.runtime.ScalaRunTime._hashCode(this)
     }
 
-    case class Symbol(ctr: String, params: Seq[Sort]) extends kore.Symbol
+    case class Symbol(ctr: String, params: Seq[Sort]) extends scala_kore.Symbol
 
-    case class Alias(ctr: String, params: Seq[Sort]) extends kore.Alias
+    case class Alias(ctr: String, params: Seq[Sort]) extends scala_kore.Alias
   }
 
   object DefaultBuilders extends Builders {
