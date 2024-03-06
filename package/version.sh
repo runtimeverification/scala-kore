@@ -28,6 +28,7 @@ version_bump() {
 version_sub() {
     local version
     version="$(cat $version_file)"
+    sed --in-place 's#^  <version>.*</version>$#  <version>'${version}'</version>#' pom.xml
 }
 
 version_command="$1" ; shift
