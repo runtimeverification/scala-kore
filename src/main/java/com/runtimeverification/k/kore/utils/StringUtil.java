@@ -1,5 +1,5 @@
 // Copyright (c) Runtime Verification, Inc. All Rights Reserved.
-package org.kframework.scala_kore.utils;
+package com.runtimeverification.k.kore.utils;
 
 public class StringUtil {
   /**

@@ -1,5 +1,5 @@
 // Copyright (c) Runtime Verification, Inc. All Rights Reserved.
-package org.kframework.scala_kore.parser
+package com.runtimeverification.k.kore.parser
 
 /**
  * A scanner of an input stream.

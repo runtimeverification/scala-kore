@@ -2,10 +2,10 @@
 
 package org.kframework.parser.kore.parser
 
+import com.runtimeverification.k.kore.implementation.{ DefaultBuilders => b }
+import com.runtimeverification.k.kore.parser.TextToKore
 import org.junit.Assert
 import org.junit.Test
-import org.kframework.scala_kore.implementation.{ DefaultBuilders => b }
-import org.kframework.scala_kore.parser.TextToKore
 
 class TextToKoreTest {
   @Test def testMultiOr(): Unit = {
