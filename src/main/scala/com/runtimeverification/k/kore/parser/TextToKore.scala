@@ -19,7 +19,7 @@ import scala.collection.immutable;
 /** Parsing error exception. */
 case class ParseError(msg: String) extends Exception(msg) {
   // ParseError.msg eq Exception.detailMessage, i.e., msg() == getMessage()
-  def this(message: String, cause: Throwable) {
+  def this(message: String, cause: Throwable) = {
     this(message)
     initCause(cause)
   }
