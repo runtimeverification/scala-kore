@@ -6,7 +6,7 @@
   <groupId>com.runtimeverification.k</groupId>
   <artifactId>scala-kore</artifactId>
   <packaging>jar</packaging>
-  <version>0.3.2</version>
+  <version>0.3.3</version>
 
   <name>Scala support for KORE</name>
 
@@ -65,8 +65,8 @@
   <properties>
     <base>master</base>
     <java.version>17</java.version>
-    <scala.majorVersion>2.12</scala.majorVersion>
-    <scala.minorVersion>18</scala.minorVersion>
+    <scala.majorVersion>2.13</scala.majorVersion>
+    <scala.minorVersion>13</scala.minorVersion>
     <scala.version>${scala.majorVersion}.${scala.minorVersion}</scala.version>
     <spotless.version>2.41.1</spotless.version>
     <googleJavaFormat.version>1.18.1</googleJavaFormat.version>
