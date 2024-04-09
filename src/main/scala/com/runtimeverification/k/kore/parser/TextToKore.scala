@@ -14,6 +14,7 @@ import com.runtimeverification.k.kore.Sort
 import com.runtimeverification.k.kore.SortVariable
 import com.runtimeverification.k.kore.Symbol
 import com.runtimeverification.k.kore.Variable
+import scala.collection.immutable;
 
 /** Parsing error exception. */
 case class ParseError(msg: String) extends Exception(msg) {
@@ -166,7 +167,7 @@ class TextToKore(b: Builders = DefaultBuilders) {
 
   // Modules = <EOF> // <empty>
   //         | Module Modules
-  // private def parseModules(modules: Seq[Module]): Seq[Module] = {
+  // private def parseModules(modules: immutable.Seq[Module]): immutable.Seq[Module] = {
   //   if (scanner.isEOF()) modules
   //   else {
   //     val mod = parseModule()
@@ -178,14 +179,14 @@ class TextToKore(b: Builders = DefaultBuilders) {
   private def parseModule(): kore.Module = {
     consumeWithLeadingWhitespaces("module")
     val name  = parseId(parsingLevel = objt)
-    val decls = parseDeclarations(Seq()).reverse
+    val decls = parseDeclarations(immutable.Seq()).reverse
     consumeWithLeadingWhitespaces("endmodule")
     val att = parseAttributes()
     b.Module(name, decls, att)
   }
 
-  private def parseModules(): Seq[kore.Module] = {
-    var ms = Seq.empty[kore.Module]
+  private def parseModules(): immutable.Seq[kore.Module] = {
+    var ms = immutable.Seq.empty[kore.Module]
     while (!scanner.isEOF()) {
       val leading_char = scanner.nextWithSkippingWhitespaces()
       if (leading_char == 'm') { // a module starts
@@ -205,7 +206,7 @@ class TextToKore(b: Builders = DefaultBuilders) {
   //             | alias Alias ( SortList ) : Sort Attributes
   //             | axiom { SortVariableList } Axiom
   //             | import Id Attributes
-  private def parseDeclarations(decls: Seq[Declaration]): Seq[Declaration] = {
+  private def parseDeclarations(decls: immutable.Seq[Declaration]): immutable.Seq[Declaration] = {
     val c1 = scanner.nextWithSkippingWhitespaces()
     if (c1 == 'e') { // endmodule
       scanner.putback('e')
@@ -531,7 +532,7 @@ class TextToKore(b: Builders = DefaultBuilders) {
                   parseList(() => parseSort(parsingLevel = previousParsingLevel), ',', '}')
                 consumeWithLeadingWhitespaces("}")
                 (p1: Pattern, p2: Pattern) =>
-                  b.Application(b.SymbolOrAlias(id, params), Seq(p1, p2))
+                  b.Application(b.SymbolOrAlias(id, params), immutable.Seq(p1, p2))
             }
             consumeWithLeadingWhitespaces("(")
             val args = parseList(() => parsePattern(), ',', ')')
@@ -552,7 +553,7 @@ class TextToKore(b: Builders = DefaultBuilders) {
                   parseList(() => parseSort(parsingLevel = previousParsingLevel), ',', '}')
                 consumeWithLeadingWhitespaces("}")
                 (p1: Pattern, p2: Pattern) =>
-                  b.Application(b.SymbolOrAlias(id, params), Seq(p1, p2))
+                  b.Application(b.SymbolOrAlias(id, params), immutable.Seq(p1, p2))
             }
             consumeWithLeadingWhitespaces("(")
             val args = parseList(() => parsePattern(), ',', ')')
@@ -581,7 +582,7 @@ class TextToKore(b: Builders = DefaultBuilders) {
           //   consumeWithLeadingWhitespaces(")")
           //   b.DomainValue(sortStr, valueStr)
           case (err1, err2) =>
-            val known = Seq(
+            val known = immutable.Seq(
               "\\top",
               "\\bottom",
               "\\and",
@@ -670,7 +671,7 @@ class TextToKore(b: Builders = DefaultBuilders) {
     scanner.nextWithSkippingWhitespaces() match {
       case '{' =>
         if (previousParsingLevel == meta) { // name is a meta-level id
-          val metalevelSorts = Seq(
+          val metalevelSorts = immutable.Seq(
             "#Char",
             "#CharList",
             "#String",
@@ -685,7 +686,7 @@ class TextToKore(b: Builders = DefaultBuilders) {
           )
           if (metalevelSorts.contains(name)) {
             consumeWithLeadingWhitespaces("}") // no params
-            b.CompoundSort(name, Seq.empty[Sort])
+            b.CompoundSort(name, immutable.Seq.empty[Sort])
           } else {
             throw error("<Meta-Sort>", name) // not a valid meta-level sort
           }
@@ -762,7 +763,7 @@ class TextToKore(b: Builders = DefaultBuilders) {
         if (parsingLevel == both || parsingLevel == objt) {
           // expect both levels or only object-level
           val id   = loop(new StringBuilder(c.toString))
-          val kwds = Seq("module", "endmodule", "sort", "symbol", "alias", "axiom")
+          val kwds = immutable.Seq("module", "endmodule", "sort", "symbol", "alias", "axiom")
           if (kwds.contains(id)) {
             throw error("<Object-Identifier> should not be keywords", id)
           }
@@ -804,10 +805,10 @@ class TextToKore(b: Builders = DefaultBuilders) {
   //      | Elem List2
   // List2 = <endsWith> // <empty>
   //       | <sep> Elem List2
-  private def parseList[T](parseElem: () => T, sep: Char, endsWith: Char): Seq[T] = {
+  private def parseList[T](parseElem: () => T, sep: Char, endsWith: Char): immutable.Seq[T] = {
     assert(sep != endsWith)
 
-    def parseList2(lst: Seq[T]): Seq[T] =
+    def parseList2(lst: immutable.Seq[T]): immutable.Seq[T] =
       scanner.nextWithSkippingWhitespaces() match {
         case c if c == endsWith =>
           scanner.putback(c)
@@ -821,11 +822,11 @@ class TextToKore(b: Builders = DefaultBuilders) {
     scanner.nextWithSkippingWhitespaces() match {
       case c if c == endsWith =>
         scanner.putback(c)
-        Seq()
+        immutable.Seq()
       case c =>
         scanner.putback(c)
         val elem = parseElem()
-        parseList2(Seq(elem))
+        parseList2(immutable.Seq(elem))
     }
   }
 

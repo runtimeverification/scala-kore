@@ -6,13 +6,14 @@ import com.runtimeverification.k.kore.implementation.{ DefaultBuilders => b }
 import com.runtimeverification.k.kore.Pattern
 import org.junit.Assert
 import org.junit.Test
+import scala.collection.immutable
 
 class InterfaceTest {
 
   @Test def patternOrdering(): Unit = {
-    val sortA = b.CompoundSort("A", Seq())
-    val sortB = b.CompoundSort("B", Seq())
-    val sortC = b.CompoundSort("C", Seq())
+    val sortA = b.CompoundSort("A", immutable.Seq())
+    val sortB = b.CompoundSort("B", immutable.Seq())
+    val sortC = b.CompoundSort("C", immutable.Seq())
 
     val dvA = b.DomainValue(sortA, "A")
     val dvB = b.DomainValue(sortB, "B")
@@ -22,13 +23,13 @@ class InterfaceTest {
     val varB = b.Variable("B", sortB)
     val varC = b.Variable("C", sortC)
 
-    val symbolA = b.SymbolOrAlias("A", Seq())
-    val symbolB = b.SymbolOrAlias("B", Seq())
-    val symbolC = b.SymbolOrAlias("C", Seq())
+    val symbolA = b.SymbolOrAlias("A", immutable.Seq())
+    val symbolB = b.SymbolOrAlias("B", immutable.Seq())
+    val symbolC = b.SymbolOrAlias("C", immutable.Seq())
 
-    val appA = b.Application(symbolA, Seq(dvA, varA))
-    val appB = b.Application(symbolB, Seq(dvB, varB))
-    val appC = b.Application(symbolC, Seq(dvC, varC))
+    val appA = b.Application(symbolA, immutable.Seq(dvA, varA))
+    val appB = b.Application(symbolB, immutable.Seq(dvB, varB))
+    val appC = b.Application(symbolC, immutable.Seq(dvC, varC))
 
     val topA = b.Top(sortA)
     val topB = b.Top(sortB)
@@ -38,13 +39,13 @@ class InterfaceTest {
     val bottomB = b.Bottom(sortB)
     val bottomC = b.Bottom(sortC)
 
-    val andA = b.And(sortA, Seq(topA, bottomA))
-    val andB = b.And(sortB, Seq(topB, bottomB))
-    val andC = b.And(sortC, Seq(topC, bottomC))
+    val andA = b.And(sortA, immutable.Seq(topA, bottomA))
+    val andB = b.And(sortB, immutable.Seq(topB, bottomB))
+    val andC = b.And(sortC, immutable.Seq(topC, bottomC))
 
-    val orA = b.Or(sortA, Seq(topA, bottomA))
-    val orB = b.Or(sortB, Seq(topB, bottomB))
-    val orC = b.Or(sortC, Seq(topC, bottomC))
+    val orA = b.Or(sortA, immutable.Seq(topA, bottomA))
+    val orB = b.Or(sortB, immutable.Seq(topB, bottomB))
+    val orC = b.Or(sortC, immutable.Seq(topC, bottomC))
 
     val notA = b.Not(sortA, topA)
     val notB = b.Not(sortB, topB)

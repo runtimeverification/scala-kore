@@ -2,27 +2,29 @@
 package com.runtimeverification.k.kore
 
 import com.davekoelle.AlphanumComparator
+import scala.collection.immutable
 
 trait Definition {
   def att: Attributes
 
-  def modules: Seq[Module]
+  def modules: immutable.Seq[Module]
 }
 
 object Definition {
-  def unapply(arg: Definition): Option[(Seq[Module], Attributes)] = Some(arg.modules, arg.att)
+  def unapply(arg: Definition): Option[(immutable.Seq[Module], Attributes)] =
+    Some(arg.modules, arg.att)
 }
 
 trait Module {
   def name: String
 
-  def decls: Seq[Declaration]
+  def decls: immutable.Seq[Declaration]
 
   def att: Attributes
 }
 
 object Module {
-  def unapply(arg: Module): Option[(String, Seq[Declaration], Attributes)] =
+  def unapply(arg: Module): Option[(String, immutable.Seq[Declaration], Attributes)] =
     Some(arg.name, arg.decls, arg.att)
 }
 
@@ -39,7 +41,7 @@ object Import {
 }
 
 trait SortDeclaration extends Declaration {
-  def params: Seq[SortVariable]
+  def params: immutable.Seq[SortVariable]
 
   def sort: Sort
 
@@ -47,21 +49,21 @@ trait SortDeclaration extends Declaration {
 }
 
 object SortDeclaration {
-  def unapply(arg: SortDeclaration): Option[(Seq[SortVariable], Sort, Attributes)] =
+  def unapply(arg: SortDeclaration): Option[(immutable.Seq[SortVariable], Sort, Attributes)] =
     Some(arg.params, arg.sort, arg.att)
 }
 
 trait HookSortDeclaration extends SortDeclaration {}
 
 object HookSortDeclaration {
-  def unapply(arg: HookSortDeclaration): Option[(Seq[SortVariable], Sort, Attributes)] =
+  def unapply(arg: HookSortDeclaration): Option[(immutable.Seq[SortVariable], Sort, Attributes)] =
     Some(arg.params, arg.sort, arg.att)
 }
 
 trait SymbolDeclaration extends Declaration {
   def symbol: Symbol
 
-  def argSorts: Seq[Sort]
+  def argSorts: immutable.Seq[Sort]
 
   def returnSort: Sort
 
@@ -69,21 +71,21 @@ trait SymbolDeclaration extends Declaration {
 }
 
 object SymbolDeclaration {
-  def unapply(arg: SymbolDeclaration): Option[(Symbol, Seq[Sort], Sort, Attributes)] =
+  def unapply(arg: SymbolDeclaration): Option[(Symbol, immutable.Seq[Sort], Sort, Attributes)] =
     Some(arg.symbol, arg.argSorts, arg.returnSort, arg.att)
 }
 
 trait HookSymbolDeclaration extends SymbolDeclaration {}
 
 object HookSymbolDeclaration {
-  def unapply(arg: HookSymbolDeclaration): Option[(Symbol, Seq[Sort], Sort, Attributes)] =
+  def unapply(arg: HookSymbolDeclaration): Option[(Symbol, immutable.Seq[Sort], Sort, Attributes)] =
     Some(arg.symbol, arg.argSorts, arg.returnSort, arg.att)
 }
 
 trait AliasDeclaration extends Declaration {
   def alias: Alias
 
-  def argSorts: Seq[Sort]
+  def argSorts: immutable.Seq[Sort]
 
   def returnSort: Sort
 
@@ -97,12 +99,12 @@ trait AliasDeclaration extends Declaration {
 object AliasDeclaration {
   def unapply(
       arg: AliasDeclaration
-  ): Option[(Alias, Seq[Sort], Sort, Pattern, Pattern, Attributes)] =
+  ): Option[(Alias, immutable.Seq[Sort], Sort, Pattern, Pattern, Attributes)] =
     Some(arg.alias, arg.argSorts, arg.returnSort, arg.leftPattern, arg.rightPattern, arg.att)
 }
 
 trait AxiomDeclaration extends Declaration {
-  def params: Seq[SortVariable]
+  def params: immutable.Seq[SortVariable]
 
   def pattern: Pattern
 
@@ -112,16 +114,16 @@ trait AxiomDeclaration extends Declaration {
 trait ClaimDeclaration extends AxiomDeclaration {}
 
 object AxiomDeclaration {
-  def unapply(arg: AxiomDeclaration): Option[(Seq[SortVariable], Pattern, Attributes)] =
+  def unapply(arg: AxiomDeclaration): Option[(immutable.Seq[SortVariable], Pattern, Attributes)] =
     Some(arg.params, arg.pattern, arg.att)
 }
 
 trait Attributes {
-  def patterns: Seq[Pattern]
+  def patterns: immutable.Seq[Pattern]
 }
 
 object Attributes {
-  def unapply(arg: Attributes): Option[Seq[Pattern]] = Some(arg.patterns)
+  def unapply(arg: Attributes): Option[immutable.Seq[Pattern]] = Some(arg.patterns)
 }
 
 trait Pattern extends Comparable[Pattern] {
@@ -213,14 +215,15 @@ trait SetVariable extends Variable {}
 trait Application extends Pattern {
   def head: SymbolOrAlias
 
-  def args: Seq[Pattern]
+  def args: immutable.Seq[Pattern]
 }
 
 object Application {
 
   import scala.math.Ordering.Implicits._
 
-  def unapply(arg: Application): Option[(SymbolOrAlias, Seq[Pattern])] = Some(arg.head, arg.args)
+  def unapply(arg: Application): Option[(SymbolOrAlias, immutable.Seq[Pattern])] =
+    Some(arg.head, arg.args)
 
   implicit val ord: Ordering[Application] = Ordering.by(unapply)
 }
@@ -248,14 +251,14 @@ object Bottom {
 trait And extends Pattern {
   def s: Sort
 
-  def args: Seq[Pattern]
+  def args: immutable.Seq[Pattern]
 }
 
 object And {
 
   import scala.math.Ordering.Implicits._
 
-  def unapply(arg: And): Option[(Sort, Seq[Pattern])] = Some(arg.s, arg.args)
+  def unapply(arg: And): Option[(Sort, immutable.Seq[Pattern])] = Some(arg.s, arg.args)
 
   implicit val ord: Ordering[And] = Ordering.by(unapply)
 }
@@ -263,14 +266,14 @@ object And {
 trait Or extends Pattern {
   def s: Sort
 
-  def args: Seq[Pattern]
+  def args: immutable.Seq[Pattern]
 }
 
 object Or {
 
   import scala.math.Ordering.Implicits._
 
-  def unapply(arg: Or): Option[(Sort, Seq[Pattern])] = Some(arg.s, arg.args)
+  def unapply(arg: Or): Option[(Sort, immutable.Seq[Pattern])] = Some(arg.s, arg.args)
 
   implicit val ord: Ordering[Or] = Ordering.by(unapply)
 }
@@ -384,7 +387,7 @@ object Floor {
 trait GeneralizedRewrite {
   def sort: Sort
 
-  def getLeftHandSide: Seq[Pattern]
+  def getLeftHandSide: immutable.Seq[Pattern]
 
   def getRightHandSide: Pattern
 }
@@ -403,7 +406,7 @@ trait Rewrites extends Pattern with GeneralizedRewrite {
 
   def _2: Pattern
 
-  def getLeftHandSide: Seq[Pattern] = Seq(_1)
+  def getLeftHandSide: immutable.Seq[Pattern] = immutable.Seq(_1)
 
   def getRightHandSide: Pattern = _2
 }
@@ -426,7 +429,7 @@ trait Equals extends Pattern with GeneralizedRewrite {
 
   def _2: Pattern
 
-  def getLeftHandSide: Seq[Pattern] = _1 match {
+  def getLeftHandSide: immutable.Seq[Pattern] = _1 match {
     case Application(_, ps) => ps
   }
 
@@ -560,14 +563,14 @@ object SortVariable {
 trait CompoundSort extends Sort {
   def ctr: String // sort constructor
 
-  def params: Seq[Sort] // sort parameters
+  def params: immutable.Seq[Sort] // sort parameters
 }
 
 object CompoundSort {
 
   import scala.math.Ordering.Implicits._
 
-  def unapply(arg: CompoundSort): Option[(String, Seq[Sort])] = Some(arg.ctr, arg.params)
+  def unapply(arg: CompoundSort): Option[(String, immutable.Seq[Sort])] = Some(arg.ctr, arg.params)
 
   implicit val ord: Ordering[CompoundSort] = Ordering.by(unapply)
 }
@@ -579,14 +582,14 @@ object CompoundSort {
 trait SymbolOrAlias {
   def ctr: String
 
-  def params: Seq[Sort]
+  def params: immutable.Seq[Sort]
 }
 
 object SymbolOrAlias {
 
   import scala.math.Ordering.Implicits._
 
-  def unapply(arg: SymbolOrAlias): Option[(String, Seq[Sort])] =
+  def unapply(arg: SymbolOrAlias): Option[(String, immutable.Seq[Sort])] =
     Some(arg.ctr, arg.params)
 
   implicit val ord: Ordering[SymbolOrAlias] = Ordering.by(unapply)
@@ -595,61 +598,73 @@ object SymbolOrAlias {
 trait Symbol extends SymbolOrAlias
 
 object Symbol {
-  def unapply(arg: Symbol): Option[(String, Seq[Sort])] = Some(arg.ctr, arg.params)
+  def unapply(arg: Symbol): Option[(String, immutable.Seq[Sort])] = Some(arg.ctr, arg.params)
 }
 
 trait Alias extends SymbolOrAlias
 
 object Alias {
-  def unapply(arg: Alias): Option[(String, Seq[Sort])] = Some(arg.ctr, arg.params)
+  def unapply(arg: Alias): Option[(String, immutable.Seq[Sort])] = Some(arg.ctr, arg.params)
 }
 
 trait Builders {
 
-  def Definition(att: Attributes, modules: Seq[Module]): Definition
+  def Definition(att: Attributes, modules: immutable.Seq[Module]): Definition
 
-  def Module(name: String, sens: Seq[Declaration], att: Attributes): Module
+  def Module(name: String, sens: immutable.Seq[Declaration], att: Attributes): Module
 
   def Import(name: String, att: Attributes): Declaration
 
-  def SortDeclaration(params: Seq[SortVariable], sort: Sort, att: Attributes): Declaration
+  def SortDeclaration(params: immutable.Seq[SortVariable], sort: Sort, att: Attributes): Declaration
 
-  def HookSortDeclaration(params: Seq[SortVariable], sort: Sort, att: Attributes): Declaration
+  def HookSortDeclaration(
+      params: immutable.Seq[SortVariable],
+      sort: Sort,
+      att: Attributes
+  ): Declaration
 
   def SymbolDeclaration(
       symbol: Symbol,
-      argSorts: Seq[Sort],
+      argSorts: immutable.Seq[Sort],
       returnSort: Sort,
       att: Attributes
   ): Declaration
 
   def HookSymbolDeclaration(
       symbol: Symbol,
-      argSorts: Seq[Sort],
+      argSorts: immutable.Seq[Sort],
       returnSort: Sort,
       att: Attributes
   ): Declaration
 
   def AliasDeclaration(
       alias: Alias,
-      argSorts: Seq[Sort],
+      argSorts: immutable.Seq[Sort],
       returnSort: Sort,
       leftPattern: Pattern,
       rightPattern: Pattern,
       att: Attributes
   ): Declaration
 
-  def AxiomDeclaration(params: Seq[SortVariable], pattern: Pattern, att: Attributes): Declaration
+  def AxiomDeclaration(
+      params: immutable.Seq[SortVariable],
+      pattern: Pattern,
+      att: Attributes
+  ): Declaration
 
-  def ClaimDeclaration(params: Seq[SortVariable], pattern: Pattern, att: Attributes): Declaration
+  def ClaimDeclaration(
+      params: immutable.Seq[SortVariable],
+      pattern: Pattern,
+      att: Attributes
+  ): Declaration
 
-  def Attributes(att: Seq[Pattern]): Attributes
+  def Attributes(att: immutable.Seq[Pattern]): Attributes
 
   def Variable(name: String, sort: Sort): Variable
 
   def SetVariable(name: String, sort: Sort): SetVariable
 
-  def Application(head: SymbolOrAlias, args: Seq[Pattern]): Pattern
+  def Application(head: SymbolOrAlias, args: immutable.Seq[Pattern]): Pattern
 
   def Top(s: Sort): Pattern
 
@@ -657,11 +672,11 @@ trait Builders {
 
   def And(s: Sort, _1: Pattern, _2: Pattern): Pattern
 
-  def And(s: Sort, args: Seq[Pattern]): Pattern
+  def And(s: Sort, args: immutable.Seq[Pattern]): Pattern
 
   def Or(s: Sort, _1: Pattern, _2: Pattern): Pattern
 
-  def Or(s: Sort, args: Seq[Pattern]): Pattern
+  def Or(s: Sort, args: immutable.Seq[Pattern]): Pattern
 
   def Not(s: Sort, _1: Pattern): Pattern
 
@@ -693,15 +708,15 @@ trait Builders {
 
   def SortVariable(name: String): SortVariable
 
-  def CompoundSort(ctr: String, params: Seq[Sort]): CompoundSort
+  def CompoundSort(ctr: String, params: immutable.Seq[Sort]): CompoundSort
 
-  def SymbolOrAlias(ctr: String, params: Seq[Sort]): SymbolOrAlias
+  def SymbolOrAlias(ctr: String, params: immutable.Seq[Sort]): SymbolOrAlias
 
-  def Symbol(str: String, params: Seq[Sort]): Symbol
+  def Symbol(str: String, params: immutable.Seq[Sort]): Symbol
 
-  def Alias(str: String, params: Seq[Sort]): Alias
+  def Alias(str: String, params: immutable.Seq[Sort]): Alias
 
-  def LeftAssoc(ctr: (Pattern, Pattern) => Pattern, ps: Seq[Pattern]): Pattern
+  def LeftAssoc(ctr: (Pattern, Pattern) => Pattern, ps: immutable.Seq[Pattern]): Pattern
 
-  def RightAssoc(ctr: (Pattern, Pattern) => Pattern, ps: Seq[Pattern]): Pattern
+  def RightAssoc(ctr: (Pattern, Pattern) => Pattern, ps: immutable.Seq[Pattern]): Pattern
 }
